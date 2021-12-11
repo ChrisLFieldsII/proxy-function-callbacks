@@ -1,37 +1,59 @@
 import isPromise from 'is-promise';
 
+type Prop = string | symbol;
+
 type TargetType = {
-  [prop: string | symbol]: any;
+  [prop: Prop]: any;
 };
 
 /**
- * @desc Command passed to `onBefore` or `
+ * @desc Command passed to callbacks
  */
 export type OnCallbackCmd<Target> = {
-  prop: string | symbol;
+  prop: Prop;
   target: Target;
 };
 
+/**
+ * @desc Command passed to `onError` callback
+ */
 export type OnErrorCmd<Target> = OnCallbackCmd<Target> & {
   error: unknown;
 };
 
+/**
+ * @desc Command passed to `onSuccess` callback
+ */
 export type OnSuccessCmd<Target> = OnCallbackCmd<Target> & {
   data: unknown;
 };
 
-export type GetProxyHandler<Target> = {
-  onSuccess?(cmd: OnSuccessCmd<Target>): void;
-  onError?(cmd: OnErrorCmd<Target>): void;
-  onBefore?(cmd: OnCallbackCmd<Target>): void;
-  onAfter?(cmd: OnCallbackCmd<Target>): void;
+/**
+ * @desc Command to get proxy for `target` object to tap into its function calls with callbacks.
+ * If the `target` function is async, the callbacks will be awaited.
+ * Be careful as hefty callbacks can make functions slower!
+ */
+export type GetProxyCmd<Target> = {
+  /** @desc Target object for proxy */
   target: Target;
+  /** @desc called when target object function successfully returns any value */
+  onSuccess?(cmd: OnSuccessCmd<Target>): void | Promise<void>;
+  /** @desc called when target object function throws an error */
+  onError?(cmd: OnErrorCmd<Target>): void | Promise<void>;
+  /** @desc called before the target object function is executed */
+  onBefore?(cmd: OnCallbackCmd<Target>): void | Promise<void>;
+  /** @desc called after the target object function is executed */
+  onAfter?(cmd: OnCallbackCmd<Target>): void | Promise<void>;
 };
 
 function noop() {}
 
+/**
+ * @desc Get a proxy for a target object that taps into each of the
+ * targets function calls with callbacks:
+ */
 export function getFnCbProxy<Target extends TargetType>(
-  args: GetProxyHandler<Target>
+  cmd: GetProxyCmd<Target>
 ) {
   const {
     onAfter = noop,
@@ -39,10 +61,10 @@ export function getFnCbProxy<Target extends TargetType>(
     onError = noop,
     onSuccess = noop,
     target,
-  } = args;
+  } = cmd;
 
   const proxyHandler = {
-    get: function (target: Target, prop: string | symbol) {
+    get: function (target: Target, prop: Prop) {
       const propType = typeof target[prop];
 
       if (propType !== 'function') {
@@ -50,48 +72,49 @@ export function getFnCbProxy<Target extends TargetType>(
       }
 
       return function () {
-        onBefore({
+        const onBeforeRes = onBefore({
           prop,
           target,
         });
 
         try {
-          const fnResult = Reflect.get(target, prop)(...arguments);
+          const fnRes = Reflect.get(target, prop)(...arguments);
 
-          if (isPromise(fnResult)) {
+          if (isPromise(fnRes)) {
             // return a wrapped promise and call callbacks
-            return new Promise((resolve, reject) => {
-              fnResult.then(
-                (successValue: unknown) => {
-                  onSuccess({
-                    data: successValue,
-                    prop,
-                    target,
-                  });
+            return new Promise(async (resolve, reject) => {
+              try {
+                await onBeforeRes;
 
-                  onAfter({
-                    prop,
-                    target,
-                  });
+                const successValue = await fnRes;
 
-                  resolve(successValue);
-                },
-                (error: unknown) => {
-                  onError({ error, prop, target });
+                await onSuccess({
+                  data: successValue,
+                  prop,
+                  target,
+                });
 
-                  onAfter({
-                    prop,
-                    target,
-                  });
+                await onAfter({
+                  prop,
+                  target,
+                });
 
-                  reject(error);
-                }
-              );
+                resolve(successValue);
+              } catch (error) {
+                await onError({ error, prop, target });
+
+                await onAfter({
+                  prop,
+                  target,
+                });
+
+                reject(error);
+              }
             });
           } else {
             // keep everything sync and call callbacks
             onSuccess({
-              data: fnResult,
+              data: fnRes,
               prop,
               target,
             });
@@ -101,7 +124,7 @@ export function getFnCbProxy<Target extends TargetType>(
               target,
             });
 
-            return fnResult;
+            return fnRes;
           }
         } catch (error) {
           onError({ error, prop, target });
