@@ -41,8 +41,8 @@ class UserManager {
   };
 }
 
-let userManager: UserManager = new UserManager();
-let proxy = getFnCbProxy<UserManager>({
+const userManager: UserManager = new UserManager();
+const proxy = getFnCbProxy<UserManager>({
   target: userManager,
   onSuccess: (cmd) => {
     console.log('ON SUCCESS', { cmd });
@@ -70,8 +70,8 @@ let proxy = getFnCbProxy<UserManager>({
 
 test('get-proxy', async (t) => {
   // console.log('USERS = ', proxy.users);
-  console.log('GET USERS = ', proxy.getUsers());
-  console.log('ADD USER = ', await proxy.addUser({ name: 'cri' }));
+  // console.log('GET USERS = ', proxy.getUsers());
+  // console.log('ADD USER = ', await proxy.addUser({ name: 'cri' }));
   // console.log(proxy.logUsers());
 
   // t.throws(
@@ -100,5 +100,15 @@ test('get-proxy', async (t) => {
   //     message: 'A user has caused a LATE ASYNC error. Of course...',
   //   }
   // );
+  t.pass();
+});
+
+test('async-fn', async (t) => {
+  try {
+    await proxy.userCausesLateErrorAsync();
+  } catch (error) {
+    console.error('error', error);
+  }
+
   t.pass();
 });
