@@ -43,6 +43,25 @@ test.beforeEach(() => {
   })
 })
 
+test.serial('access non-function property', (t) => {
+  const names = proxy.names
+  t.deepEqual(names, [])
+  t.true(onBefore.notCalled)
+  t.true(onError.notCalled)
+  t.true(onAfter.notCalled)
+  t.true(onSuccess.notCalled)
+})
+
+test.serial('access non-existent property', (t) => {
+  // @ts-ignore
+  const shouldBeUndefined = proxy.shouldBeUndefined
+  t.is(shouldBeUndefined, undefined)
+  t.true(onBefore.notCalled)
+  t.true(onError.notCalled)
+  t.true(onAfter.notCalled)
+  t.true(onSuccess.notCalled)
+})
+
 test.serial('sync - success - callbacks called in order', (t) => {
   proxy.addName('cri')
 
