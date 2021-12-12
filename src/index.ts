@@ -1,1 +1,1 @@
-export * from './get-proxy';
+export * from './get-proxy'
