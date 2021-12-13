@@ -133,10 +133,18 @@ test.serial('async - error - callbacks called in order', async (t) => {
   sinon.assert.callOrder(onBefore, onError, onAfter)
 })
 
-test.serial('verify onSuccess callback data', (t) => {
+test.serial('sync - verify onSuccess callback data', (t) => {
   proxy.addName('cri')
   proxy.addName('bayla')
   const name = proxy.getRandomName()
 
   t.true(onSuccess.calledWith(sinon.match({ data: name })))
+})
+
+test.serial('sync - verify onError callback data', (t) => {
+  const error = t.throws(() => proxy.throwError(), {
+    message: ERROR_TAG,
+  })
+
+  t.true(onError.calledWith(sinon.match({ error })))
 })
