@@ -26,6 +26,14 @@ class NameManager {
     return this.names[Math.floor(Math.random() * this.names.length)]
   }
 
+  getRandomNameAsync = () => {
+    return new Promise<string>((resolve) => {
+      setTimeout(() => {
+        resolve(this.getRandomName())
+      }, 1500)
+    })
+  }
+
   throwError = () => {
     throw new Error(ERROR_TAG)
   }
@@ -147,4 +155,10 @@ test.serial('sync - verify onError callback data', (t) => {
   })
 
   t.true(onError.calledWith(sinon.match({ error })))
+})
+
+test.serial('async - verify onSuccess callback data', async (t) => {
+  const name = await proxy.getRandomNameAsync()
+
+  t.true(onSuccess.calledWith(sinon.match({ data: name })))
 })
