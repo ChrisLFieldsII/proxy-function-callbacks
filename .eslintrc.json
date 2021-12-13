@@ -30,6 +30,6 @@
       "error",
       { "ignoreDeclarationSort": true, "ignoreCase": true }
     ],
-    "@typescript-eslint/ban-ts-comment": "warn"
+    "@typescript-eslint/ban-ts-comment": "off"
   }
 }
