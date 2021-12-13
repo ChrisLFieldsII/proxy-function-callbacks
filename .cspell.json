@@ -23,6 +23,7 @@
     "typedoc",
     "untracked"
   ],
+  "ignoreWords": ["bayla"],
   "flagWords": [],
   "ignorePaths": [
     "package.json",

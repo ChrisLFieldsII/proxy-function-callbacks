@@ -22,6 +22,10 @@ class NameManager {
     })
   }
 
+  getRandomName = () => {
+    return this.names[Math.floor(Math.random() * this.names.length)]
+  }
+
   throwError = () => {
     throw new Error(ERROR_TAG)
   }
@@ -48,9 +52,12 @@ let proxy = getFnCbProxy({
   onError,
 })
 
-test.beforeEach(() => {
-  const spies = [onBefore, onSuccess, onError, onAfter]
+const spies = [onBefore, onSuccess, onError, onAfter]
+function resetSpies() {
   spies.forEach((spy) => spy.resetHistory())
+}
+test.beforeEach(() => {
+  resetSpies()
   nameManager = new NameManager()
   proxy = getFnCbProxy({
     target: nameManager,
@@ -124,4 +131,12 @@ test.serial('async - error - callbacks called in order', async (t) => {
   t.true(onError.calledOnce, 'onError')
   t.true(onAfter.calledOnce, 'onAfter')
   sinon.assert.callOrder(onBefore, onError, onAfter)
+})
+
+test.serial('verify onSuccess callback data', (t) => {
+  proxy.addName('cri')
+  proxy.addName('bayla')
+  const name = proxy.getRandomName()
+
+  t.true(onSuccess.calledWith(sinon.match({ data: name })))
 })
