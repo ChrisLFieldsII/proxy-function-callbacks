@@ -162,3 +162,11 @@ test.serial('async - verify onSuccess callback data', async (t) => {
 
   t.true(onSuccess.calledWith(sinon.match({ data: name })))
 })
+
+test.serial('async - verify onError callback data', async (t) => {
+  const error = await t.throwsAsync(() => proxy.throwAsyncError(), {
+    message: ERROR_TAG,
+  })
+
+  t.true(onError.calledWith(sinon.match({ error })))
+})
