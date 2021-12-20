@@ -1,6 +1,6 @@
 {
   "name": "proxy-function-callbacks",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "create a proxy for an object to intercept its function calls with callbacks",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
