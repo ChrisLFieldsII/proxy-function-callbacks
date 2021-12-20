@@ -1,13 +1,17 @@
 {
   "name": "proxy-function-callbacks",
-  "version": "0.0.0",
+  "version": "1.1.0",
   "description": "create a proxy for an object to intercept its function calls with callbacks",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
   "module": "build/module/index.js",
   "repository": "https://github.com/ChrisLFieldsII/proxy-function-callbacks",
   "license": "MIT",
-  "keywords": ["proxy", "function", "callbacks"],
+  "keywords": [
+    "proxy",
+    "function",
+    "callbacks"
+  ],
   "scripts": {
     "prepublish": "run-s build",
     "build": "run-p build:*",
