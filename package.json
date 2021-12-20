@@ -7,8 +7,9 @@
   "module": "build/module/index.js",
   "repository": "https://github.com/ChrisLFieldsII/proxy-function-callbacks",
   "license": "MIT",
-  "keywords": [],
+  "keywords": ["proxy", "function", "callbacks"],
   "scripts": {
+    "prepublish": "run-s build",
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.json",
     "build:module": "tsc -p tsconfig.module.json",
